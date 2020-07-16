@@ -6,6 +6,7 @@ import { VerifyMessageDto } from "../dtos/verify-message.dto";
 import { JwtService } from "@nestjs/jwt";
 import { Wallet } from "src/models/wallet.model";
 import * as ethers from "ethers";
+import { UpdateProfileDto } from "src/dtos/update-profile.dto";
 
 @Injectable()
 export class AuthenticationService {
@@ -18,7 +19,10 @@ export class AuthenticationService {
 
     public async verifyMessage(verifyMessageDto: VerifyMessageDto): Promise<any> {
         try {
+            console.log("Verify Message Dto", JSON.stringify(verifyMessageDto, null, 3));
             const newWalletAddress = await ethers.utils.verifyMessage(verifyMessageDto.tokenId, verifyMessageDto.signature);
+            console.log("Wallet address", newWalletAddress);
+            console.log("Verify message wallet address", verifyMessageDto.walletAddress);
             if (verifyMessageDto.walletAddress !== newWalletAddress) {
                 throw new HttpException("Invalid wallet address", HttpStatus.UNAUTHORIZED);
             }
@@ -80,6 +84,56 @@ export class AuthenticationService {
                 token: token
             }
 
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    public async verifyToken(token: string): Promise<any> {
+        try {
+            const user = this.jwtService.verifyAsync(token, {
+                complete: true
+            })
+            return user;
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    public async updateProfileService(updatProfileDto: UpdateProfileDto): Promise<any> {
+        try {
+            const userModel = this.noSqlService.getUserModel();
+            const profileModel = this.noSqlService.getProfileModel();
+            const user = await userModel.findById(updatProfileDto.userId);
+            if (!user) throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
+            const profile = await profileModel.findOne({
+                userId: updatProfileDto.userId
+            });
+            if (profile) {
+                const updatedProfile = profileModel.findByIdAndUpdate(
+                    profile._id,
+                    updatProfileDto,
+                    {new: true, useFindAndModify: false}
+                )
+                
+                return {
+                    status: HttpStatus.OK,
+                    message: "Profile updated successfully",
+                }
+            }
+
+            const createdProfile = await new profileModel(updatProfileDto).save()
+            if (!createdProfile) throw new HttpException("Update profile failed", HttpStatus.CONFLICT);
+            const updatedUser = await userModel.findByIdAndUpdate(
+                createdProfile.userId,
+                { profileId: createdProfile._id },
+                { new: true, useFindAndModify: false }
+            )
+            if (!updatedUser) throw new HttpException("Update user failed", HttpStatus.CONFLICT);
+            return {
+                status: HttpStatus.OK,
+                message: "Profile updated successfully",
+            }
         } catch (exception) {
             throw exception;
         }
