@@ -19,10 +19,7 @@ export class AuthenticationService {
 
     public async verifyMessage(verifyMessageDto: VerifyMessageDto): Promise<any> {
         try {
-            console.log("Verify Message Dto", JSON.stringify(verifyMessageDto, null, 3));
             const newWalletAddress = await ethers.utils.verifyMessage(verifyMessageDto.tokenId, verifyMessageDto.signature);
-            console.log("Wallet address", newWalletAddress);
-            console.log("Verify message wallet address", verifyMessageDto.walletAddress);
             if (verifyMessageDto.walletAddress !== newWalletAddress) {
                 throw new HttpException("Invalid wallet address", HttpStatus.UNAUTHORIZED);
             }
