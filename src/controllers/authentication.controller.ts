@@ -3,6 +3,7 @@ import { MessagePattern } from "@nestjs/microservices";
 import { AuthenticationService } from "../services/authentication.service";
 import { VerifyMessageDto } from "../dtos/verify-message.dto";
 import { UpdateProfileDto } from "src/dtos/update-profile.dto";
+import { AuthBodyDto } from "src/dtos/auth-body.dto";
 
 @Controller("authentication")
 export class AuthenticationController {
@@ -38,9 +39,9 @@ export class AuthenticationController {
   @MessagePattern({
     cmd: 'verify-token'
   })
-  public async verifyJwtToken(token: string): Promise<any> {
+  public async verifyJwtToken(authBodyDto: AuthBodyDto): Promise<any> {
     try {
-      const user = await this.authenticationService.verifyToken(token);
+      const user = await this.authenticationService.verifyToken(authBodyDto.authToken);
       return user;
     } catch (exception) {
       throw exception;

@@ -86,9 +86,10 @@ export class AuthenticationService {
         }
     }
 
-    public async verifyToken(token: string): Promise<any> {
+    public async verifyToken(token: string | string[]): Promise<any> {
         try {
-            const user = this.jwtService.verifyAsync(token, {
+            console.log("Token", token);
+            const user = await this.jwtService.verifyAsync(token.toString(), {
                 complete: true
             })
             return user;
