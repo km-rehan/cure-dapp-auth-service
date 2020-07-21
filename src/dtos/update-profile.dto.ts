@@ -36,5 +36,5 @@ export interface UpdateProfileDto {
   
   language: string,
   
-  timeZone: Date,
+  timeZone: string,
 }

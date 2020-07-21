@@ -4,6 +4,7 @@ import { AuthenticationService } from "../services/authentication.service";
 import { VerifyMessageDto } from "../dtos/verify-message.dto";
 import { UpdateProfileDto } from "src/dtos/update-profile.dto";
 import { AuthBodyDto } from "src/dtos/auth-body.dto";
+import { GetProfileDto } from "src/dtos/get-profile.dto";
 
 @Controller("authentication")
 export class AuthenticationController {
@@ -17,7 +18,31 @@ export class AuthenticationController {
   })
   public async verifyLoginMessage(verifyMessageDTO: VerifyMessageDto): Promise<any> {
     try {
-      const response = this.authenticationService.verifyMessage(verifyMessageDTO);
+      const response = await this.authenticationService.verifyMessage(verifyMessageDTO);
+      return response;
+    } catch (exception) {
+      throw exception;
+    }
+  }
+
+  @MessagePattern({
+    cmd: "get-profile-for-doctor"
+  })
+  public async getDoctorProfileForUser(getProfileDto: GetProfileDto): Promise<any> {
+    try {
+      const response = await this.authenticationService.getDoctorProfileForUser(getProfileDto);
+      return response;
+    } catch (exception) {
+      throw exception;
+    }
+  }
+
+  @MessagePattern({
+    cmd: "get-profile-for-user"
+  })
+  public async getProfileForUser(getProfileDto: GetProfileDto): Promise<any> {
+    try {
+      const response = await this.authenticationService.getProfileForUser(getProfileDto);
       return response;
     } catch (exception) {
       throw exception;
@@ -30,6 +55,19 @@ export class AuthenticationController {
   public async updateUserProfile(updateProfileDto: UpdateProfileDto): Promise<any> {
     try {
       const response = await this.authenticationService.updateProfileService(updateProfileDto);
+      return response;
+    } catch (exception) {
+      throw exception;
+    }
+  }
+
+
+  @MessagePattern({
+    cmd: 'update-doctors-profile'
+  })
+  public async updateDoctorsProfile(updateProfileDto: UpdateProfileDto): Promise<any> {
+    try {
+      const response = await this.authenticationService.updateDoctorProfileService(updateProfileDto);
       return response;
     } catch (exception) {
       throw exception;

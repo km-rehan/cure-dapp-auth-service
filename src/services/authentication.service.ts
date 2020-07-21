@@ -7,6 +7,7 @@ import { JwtService } from "@nestjs/jwt";
 import { Wallet } from "src/models/wallet.model";
 import * as ethers from "ethers";
 import { UpdateProfileDto } from "src/dtos/update-profile.dto";
+import { GetProfileDto } from "src/dtos/get-profile.dto";
 
 @Injectable()
 export class AuthenticationService {
@@ -16,6 +17,43 @@ export class AuthenticationService {
         private readonly jwtService: JwtService
     ) {
     }
+
+    public async getDoctorProfileForUser(getProfileDto: GetProfileDto): Promise<any> {
+        try {
+            const profileModel = this.noSqlService.getProfileModel();
+            const userModel = this.noSqlService.getUserModel();
+            const user = await userModel.findById(getProfileDto.userId);
+            const profile = await profileModel.findOne({
+                userId: user._id
+            });
+
+            return {
+                status: HttpStatus.FOUND,
+                profile
+            }
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    public async getProfileForUser(getProfileDto: GetProfileDto): Promise<any> {
+        try {
+            const profileModel = this.noSqlService.getProfileModel();
+            const userModel = this.noSqlService.getUserModel();
+            const user = await userModel.findById(getProfileDto.userId);
+            if (!user) throw new HttpException("No user found with the given user id", HttpStatus.NOT_FOUND);
+            const profile = await profileModel.findOne({
+                userId: user._id
+            })
+            return {
+                status: HttpStatus.FOUND,
+                profile
+            }
+        } catch (exception) {
+            throw exception;
+        }
+    }
+  
 
     public async verifyMessage(verifyMessageDto: VerifyMessageDto): Promise<any> {
         try {
@@ -88,11 +126,57 @@ export class AuthenticationService {
 
     public async verifyToken(token: string | string[]): Promise<any> {
         try {
-            console.log("Token", token);
             const user = await this.jwtService.verifyAsync(token.toString(), {
                 complete: true
             })
             return user;
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    public async updateDoctorProfileService(updateProfileDto: UpdateProfileDto): Promise<any> {
+        try {
+            const userModel = this.noSqlService.getUserModel();
+            const profileModel = this.noSqlService.getProfileModel();
+            const user = await userModel.findById(updateProfileDto.userId);
+            if (!user) throw new HttpException("User not found", HttpStatus.UNAUTHORIZED);
+            const profile = await profileModel.findOne({
+                userId: updateProfileDto.userId
+            });
+            if (profile) {
+                const updatedProfile = await profileModel.findByIdAndUpdate(
+                    profile._id,
+                    updateProfileDto,
+                    {new: true, useFindAndModify: false}
+                )
+
+                const updateUser = await userModel.findByIdAndUpdate(
+                    updatedProfile._id,
+                    { profileId: updatedProfile._id, doctor: true },
+                    {new: true, useFindAndModify: true}
+                )
+
+                return {
+                    status: HttpStatus.OK,
+                    message: "Doctors profile updated successfully",
+                    profile: updatedProfile,
+                }
+            }
+
+            const createdProfile = await new profileModel(updateProfileDto).save()
+            if (createdProfile) throw new HttpException("Update doctor's profile failed", HttpStatus.CONFLICT);
+            const updateUser = await userModel.findByIdAndUpdate(
+                createdProfile.userId,
+                { profileId: createdProfile._id, doctor: true },
+                { new: true, useFindAndModify: false }
+            )
+
+            if (!updateUser) throw new HttpException("Update doctor profile failed", HttpStatus.CONFLICT);
+            return {
+                status: HttpStatus.OK,
+                message: "Successfully updated doctor profile"
+            }
         } catch (exception) {
             throw exception;
         }
@@ -108,15 +192,22 @@ export class AuthenticationService {
                 userId: updatProfileDto.userId
             });
             if (profile) {
-                const updatedProfile = profileModel.findByIdAndUpdate(
+                const updatedProfile = await profileModel.findByIdAndUpdate(
                     profile._id,
                     updatProfileDto,
                     {new: true, useFindAndModify: false}
+                )
+
+                const updatedUser = await userModel.findByIdAndUpdate(
+                    updatedProfile._id,
+                    { profileId: updatedProfile._id },
+                    { new: true, useFindAndModify: false }
                 )
                 
                 return {
                     status: HttpStatus.OK,
                     message: "Profile updated successfully",
+                    profile: updatedProfile
                 }
             }
 
@@ -131,6 +222,7 @@ export class AuthenticationService {
             return {
                 status: HttpStatus.OK,
                 message: "Profile updated successfully",
+                profile: createdProfile
             }
         } catch (exception) {
             throw exception;

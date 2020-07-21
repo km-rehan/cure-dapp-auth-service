@@ -20,7 +20,7 @@ export class Profile extends Document {
     secondaryPhone: string;
     bloodGroup: string;
     language: string;
-    timeZone: Date;
+    timeZone: string;
 }
 
 export const ProfileSchema = new Schema({
@@ -92,8 +92,8 @@ export const ProfileSchema = new Schema({
         type: String,
         required: true,
         enum: [
-            "Male",
-            "Female"
+            "male",
+            "female"
         ],
     },
 
@@ -104,12 +104,12 @@ export const ProfileSchema = new Schema({
 
     secondaryEmail: {
         type: String,
-        required: true
+        required: false
     },
 
     secondaryPhone: {
         type: String,
-        required: true
+        required: false
     },
 
     bloodGroup: {
@@ -123,7 +123,8 @@ export const ProfileSchema = new Schema({
     },
 
     timeZone: {
-        type: Date
+        type: String,
+        required: true
     }
 }, {
     timestamps: true,
