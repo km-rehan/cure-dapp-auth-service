@@ -5,6 +5,7 @@ import { VerifyMessageDto } from "../dtos/verify-message.dto";
 import { UpdateProfileDto } from "src/dtos/update-profile.dto";
 import { AuthBodyDto } from "src/dtos/auth-body.dto";
 import { GetProfileDto } from "src/dtos/get-profile.dto";
+import { GetKycDto } from "src/dtos/get-kyc.dto";
 
 @Controller("authentication")
 export class AuthenticationController {
@@ -80,6 +81,18 @@ export class AuthenticationController {
   public async verifyJwtToken(authBodyDto: AuthBodyDto): Promise<any> {
     try {
       const user = await this.authenticationService.verifyToken(authBodyDto.authToken);
+      return user;
+    } catch (exception) {
+      throw exception;
+    }
+  }
+
+  @MessagePattern({
+    cmd: 'get-kyc-status'
+  })
+  public async getKycStatus(getKycDto: GetKycDto): Promise<any> {
+    try {
+      const user = await this.authenticationService.getKycStatus(getKycDto)
       return user;
     } catch (exception) {
       throw exception;

@@ -8,7 +8,7 @@ export class User extends Document {
 
     profileId: Profile["_id"];
 
-    kycId: string;
+    isKycDone: boolean;
 
     activated: boolean;
 
@@ -34,9 +34,9 @@ export const UserSchema = new Schema({
         ref: "Profile"
     },
     
-    kycId: {
-        type: String,
-        required: false
+    isKycDone: {
+        type: Boolean,
+        default: false
     },
 
     activated: {

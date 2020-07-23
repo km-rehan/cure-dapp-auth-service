@@ -8,6 +8,7 @@ import { Wallet } from "src/models/wallet.model";
 import * as ethers from "ethers";
 import { UpdateProfileDto } from "src/dtos/update-profile.dto";
 import { GetProfileDto } from "src/dtos/get-profile.dto";
+import { GetKycDto } from "src/dtos/get-kyc.dto";
 
 @Injectable()
 export class AuthenticationService {
@@ -119,6 +120,16 @@ export class AuthenticationService {
                 token: token
             }
 
+        } catch (exception) {
+            throw exception;
+        }
+    }
+
+    public async getKycStatus(getKycDto: GetKycDto): Promise<any> {
+        try {
+            const userModel = this.noSqlService.getUserModel();
+            const user = await userModel.findById(getKycDto.userId)
+            return user;
         } catch (exception) {
             throw exception;
         }
