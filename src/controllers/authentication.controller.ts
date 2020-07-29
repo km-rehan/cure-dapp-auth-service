@@ -1,4 +1,4 @@
-import { Controller } from "@nestjs/common";
+import { Controller, HttpService } from "@nestjs/common";
 import { MessagePattern } from "@nestjs/microservices";
 import { AuthenticationService } from "../services/authentication.service";
 import { VerifyMessageDto } from "../dtos/verify-message.dto";
@@ -10,7 +10,9 @@ import { GetKycDto } from "src/dtos/get-kyc.dto";
 @Controller("authentication")
 export class AuthenticationController {
 
-  constructor(private readonly authenticationService: AuthenticationService) {
+  constructor(
+    private readonly authenticationService: AuthenticationService,
+    ) {
 
   }
 
@@ -92,7 +94,7 @@ export class AuthenticationController {
   })
   public async getKycStatus(getKycDto: GetKycDto): Promise<any> {
     try {
-      const user = await this.authenticationService.getKycStatus(getKycDto)
+      const user = await this.authenticationService.getKycStatus(getKycDto);
       return user;
     } catch (exception) {
       throw exception;

@@ -3,7 +3,6 @@ import { User } from "./user.model";
 
 export class Profile extends Document {
     userId: User["_id"];
-    kycverified: boolean;
     firstname: string;
     lastname: string;
     email: string;
@@ -27,11 +26,6 @@ export const ProfileSchema = new Schema({
     userId: {
         type: Schema.Types.ObjectId,
         ref: "User"
-    },
-
-    kycverified: {
-        type: Boolean,
-        default: false
     },
 
     firstname: {

@@ -16,6 +16,7 @@ export class Wallet extends Document {
     activateDate: Date;
     expiryDate: Date;
     active: boolean;
+    walletAddress: string;
     walletPassword: string;
     accountAddress: string;
     accountPassword: string;

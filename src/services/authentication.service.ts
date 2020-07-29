@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, HttpService } from "@nestjs/common";
 import { User } from "../models/user.model";
 import { Model } from "mongoose";
 import { NoSqlService } from "./no-sql.service";
@@ -15,7 +15,8 @@ export class AuthenticationService {
 
     constructor(
         private readonly noSqlService: NoSqlService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly httpService: HttpService,
     ) {
     }
 
@@ -128,8 +129,19 @@ export class AuthenticationService {
     public async getKycStatus(getKycDto: GetKycDto): Promise<any> {
         try {
             const userModel = this.noSqlService.getUserModel();
+            const walletModel = this.noSqlService.getWalletModel();
             const user = await userModel.findById(getKycDto.userId)
-            return user;
+            const walletId = user.walletAddress[0];
+            const wallet = await walletModel.findById(walletId);
+            const address = wallet.walletAddress;
+            const responses = await Promise.all([
+                this.httpService.get(`/api/kyc-level-one/status/${address}`),
+                this.httpService.get(`/api/kyc-level-two/status/${address}`, {
+                    baseURL: `http://3.19.158.222:8010/`
+                })
+            ]);
+            console.log("Kyc data", JSON.stringify(responses));
+            return responses;
         } catch (exception) {
             throw exception;
         }
